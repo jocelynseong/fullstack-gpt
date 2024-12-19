@@ -30,18 +30,18 @@ class ChatCallbackHandler(BaseCallbackHandler):
 @st.cache_data(show_spinner="Embedding...")
 def embed_file(this):
     file_content = file.read()
-    file_path = f"./.cache/files/{file.name}"
+    file_path = f"./db/files/{file.name}"
 
     with open(file_path, "wb") as f:
         f.write(file_content)
 
-    cache_dir = LocalFileStore(f'./.cache/embeddings/{file.name}')
+    cache_dir = LocalFileStore(f'./db/embeddings/{file.name}')
     spliter = CharacterTextSplitter.from_tiktoken_encoder(
         separator="\n",
         chunk_size=600,
         chunk_overlap=100
     )
-    loader = UnstructuredFileLoader(f"./.cache/files/{file.name}")
+    loader = UnstructuredFileLoader(f"./db/files/{file.name}")
     docs = loader.load_and_split(text_splitter=spliter)
     embeddings = OpenAIEmbeddings()
     cached_embeddings = CacheBackedEmbeddings.from_bytes_store(
@@ -84,7 +84,7 @@ prompt = ChatPromptTemplate.from_messages([
 
 
 with st.sidebar:
-    github_url = "https://github.com/jocelynseong/fullstack-gpt/blob/main/tasks/241219/app.py"
+    github_url = "https://github.com/jocelynseong/fullstack-gpt/app.py"
     st.sidebar.write(f"[View on GitHub]({github_url})")
     openai_api_key = st.text_input("openai api key")
     file = st.file_uploader(
