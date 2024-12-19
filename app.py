@@ -28,7 +28,7 @@ class ChatCallbackHandler(BaseCallbackHandler):
         self.message_box.markdown(self.message)
 
 @st.cache_data(show_spinner="Embedding...")
-def embed_file(this):
+def embed_file(this, openai_api_key):
     file_content = file.read()
     file_path = f"./db/files/{file.name}"
 
@@ -43,7 +43,9 @@ def embed_file(this):
     )
     loader = UnstructuredFileLoader(f"./db/files/{file.name}")
     docs = loader.load_and_split(text_splitter=spliter)
-    embeddings = OpenAIEmbeddings()
+    embeddings = OpenAIEmbeddings(
+        openai_api_key=openai_api_key
+    )
     cached_embeddings = CacheBackedEmbeddings.from_bytes_store(
         embeddings,
         cache_dir
@@ -84,7 +86,7 @@ prompt = ChatPromptTemplate.from_messages([
 
 
 with st.sidebar:
-    github_url = "https://github.com/jocelynseong/fullstack-gpt/app.py"
+    github_url = "https://github.com/jocelynseong/fullstack-gpt/blob/main/app.py"
     st.sidebar.write(f"[View on GitHub]({github_url})")
     openai_api_key = st.text_input("openai api key")
     file = st.file_uploader(
@@ -125,7 +127,7 @@ if file and openai_api_key:
             history = memory.load_memory_variables({}).get("history", [])
             print(f"Loaded history: {history}")
             return history
-        retriever = embed_file(file)
+        retriever = embed_file(file, openai_api_key)
         send_message("i'm ready! ask away!", "ai", save=False)
         paint_history()
         message = st.chat_input("Ask anything about your file")
