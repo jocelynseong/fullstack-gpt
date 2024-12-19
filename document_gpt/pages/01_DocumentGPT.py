@@ -1,28 +1,125 @@
-import streamlit as st
 import time
+from datetime import datetime
+from langchain.prompts import ChatPromptTemplate
+from langchain.document_loaders import UnstructuredFileLoader
+from langchain.embeddings import CacheBackedEmbeddings, OpenAIEmbeddings
+from langchain.storage import LocalFileStore
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
+from langchain.vectorstores.faiss import FAISS
+from langchain.chat_models import ChatOpenAI
+from langchain.callbacks.base import BaseCallbackHandler
+import streamlit as st
 
-st.title("Document GPT")
+class ChatCallbackHandler(BaseCallbackHandler):
+    message = ""
+    
 
+    def on_llm_start(self,*args, **kwargs):
+        self.message_box = st.empty()
+        with st.sidebar:
+            st.write("llm started!")
+    def on_llm_end(self,*args, **kwargs):
+        save_message(self.message, "ai")
+    def on_llm_new_token(self, token, *args,  **kwargs):
+        self.message += token
+        self.message_box.markdown(self.message)
 
-def send_message(message,role, save=True):
+llm = ChatOpenAI(
+    temperature=0.1,
+    streaming=True,
+    callbacks=[
+        ChatCallbackHandler()
+    ]
+    )
+
+st.set_page_config(
+    page_icon="📃",
+    page_title="DocumentGPT"
+)
+
+@st.cache_data(show_spinner="Embedding...")
+def embed_file(this):
+    file_content = file.read()
+    file_path = f"../db/files/{file.name}"
+
+    with open(file_path, "wb") as f:
+        f.write(file_content)
+
+    cache_dir = LocalFileStore(f'../db/embeddings/{file.name}')
+    spliter = CharacterTextSplitter.from_tiktoken_encoder(
+        separator="\n",
+        chunk_size=600,
+        chunk_overlap=100
+    )
+    loader = UnstructuredFileLoader(f"../db/files/{file.name}")
+    docs = loader.load_and_split(text_splitter=spliter)
+    embeddings = OpenAIEmbeddings()
+    cached_embeddings = CacheBackedEmbeddings.from_bytes_store(
+        embeddings,
+        cache_dir
+    )
+    vectorstore = FAISS.from_documents(docs, cached_embeddings)
+    retriever = vectorstore.as_retriever()
+    return retriever
+
+def save_message(message, role):
+    st.session_state["messages"].append({"message": message, "role": role})
+
+st.markdown(
+"""
+Welcome!
+
+Use this chatbot to ask questions to an ai about your files!
+            
+Upload your files on the sidebar.
+""")
+
+with st.sidebar:
+    file = st.file_uploader(
+        "upload a .txt .pdf of .docx file", 
+        type=["pdf", "txt", "docx"]
+    )
+
+def send_message(message, role, save=True):
     with st.chat_message(role):
-        st.write(message)
+        st.markdown(message)
     if save:
-        st.session_state["messages"].append({"message": message, "role" : role})
+        save_message(message, role)
 
-
-if "messages" not in st.session_state:
-    st.session_state["messages"] = []
-else:
+def paint_history():
     for message in st.session_state["messages"]:
         send_message(message["message"], message["role"], save=False)
 
-message = st.chat_input("Send a message to the ai")
+def format_docs(docs):
+    return "\n\n".join(document.page_content for document in docs)
 
-if message:
-    send_message(message, "human", save=True)
-    time.sleep(2)
-    send_message(f"You said : {message}", "ai")
+prompt = ChatPromptTemplate.from_messages([
+    (
+        "system",
+            """
+            Answer the question using ONLY the following context. If you don't know the answer just say you don't know. DON'T make anything up.
+            
+            Context: {context}
+            """,        
+    ),
+    ("human", "{question}")
+])
 
-    with st.sidebar:
-        st.write(st.session_state["messages"])
+if file:
+    st.write(datetime.now())
+    retriever = embed_file(file)
+    send_message("i'm ready! ask away!", "ai", save=False)
+    paint_history()
+    message = st.chat_input("Ask anything about you file")
+    if message:
+        send_message(message, "human")
+        chain = ({
+            "context" : retriever | RunnableLambda(format_docs),
+            "question" : RunnablePassthrough()
+        } | prompt | llm)
+        with st.chat_message("ai"):
+            response = chain.invoke(message)
+
+else:
+    st.session_state["messages"] = [] 
