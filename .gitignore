@@ -4,3 +4,4 @@ env/
 .devcontainer
 .cache
 db/quiz_files
+__pycache__
