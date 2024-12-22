@@ -3,3 +3,4 @@ env/
 .streamlit/
 .devcontainer
 .cache
+db/quiz_files
