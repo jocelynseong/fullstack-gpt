@@ -30,18 +30,18 @@ class ChatCallbackHandler(BaseCallbackHandler):
 @st.cache_data(show_spinner="Embedding...")
 def embed_file(this, openai_api_key):
     file_content = file.read()
-    file_path = f"./db/files/{file.name}"
+    file_path = f"../../db/files/{file.name}"
 
     with open(file_path, "wb") as f:
         f.write(file_content)
 
-    cache_dir = LocalFileStore(f'./db/embeddings/{file.name}')
+    cache_dir = LocalFileStore(f'../../db/embeddings/{file.name}')
     spliter = CharacterTextSplitter.from_tiktoken_encoder(
         separator="\n",
         chunk_size=600,
         chunk_overlap=100
     )
-    loader = UnstructuredFileLoader(f"./db/files/{file.name}")
+    loader = UnstructuredFileLoader(f"../../db/files/{file.name}")
     docs = loader.load_and_split(text_splitter=spliter)
     embeddings = OpenAIEmbeddings(
         openai_api_key=openai_api_key
