@@ -18,8 +18,9 @@ st.set_page_config(
 )
 
 with st.sidebar:
-    github_url = "https://github.com/jocelynseong/fullstack-gpt/"
+    github_url = "https://github.com/jocelynseong/fullstack-gpt/blob/main/tasks/241222/app.py"
     st.sidebar.write(f"[View on GitHub]({github_url})")
+
     ## api key
     open_api_key = st.text_input("openai api key")
     llm=None
