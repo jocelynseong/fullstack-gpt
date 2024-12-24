@@ -9,7 +9,8 @@ import streamlit as st
 import loader
 
 llm = ChatOpenAI(
-    temperature=0.1
+    temperature=0.1,
+    openai_api_key=None
 )
 
 memory = ConversationBufferMemory(
