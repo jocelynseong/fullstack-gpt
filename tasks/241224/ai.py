@@ -113,6 +113,7 @@ def choose_answer(inputs):
     )
 
 def set_api_key(api_key):
+    loader.set_open_api_key(api_key)
     global llm
     llm = ChatOpenAI(
         temperature=0.1,
