@@ -5,3 +5,4 @@ env/
 .cache
 db/quiz_files
 __pycache__
+db/embeddings/*
