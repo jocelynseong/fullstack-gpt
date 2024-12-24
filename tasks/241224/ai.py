@@ -171,8 +171,10 @@ def get_answer(question):
             response = chain.invoke(question)
             return response.content
     except AuthenticationError as ae:
+        st.write(ae)
         print(ae)
         return "AuthError"
     except Exception as e:
+        st.write(e)
         print(e)
         return "Error"

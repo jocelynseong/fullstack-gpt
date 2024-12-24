@@ -38,7 +38,7 @@ def parse_page(soup):
     return str(soup.get_text()).replace("\n", "").replace("\xa0", "").replace("\t", "")
 
 
-@st.cache_data(show_spinner="Loading website ...")
+@st.cache_data(show_spinner=False)
 def load_website():
     try :
         url = 'https://developers.cloudflare.com/sitemap-0.xml'
