@@ -28,6 +28,8 @@ st.write("""
 """)
 
 with st.sidebar:
+    url = "https://github.com/jocelynseong/fullstack-gpt/blob/master/tasks/241224/app.py"
+    st.sidebar.write(f"[View on GitHub]({url})")
     api_key = st.text_input("openai api key")
 
 
