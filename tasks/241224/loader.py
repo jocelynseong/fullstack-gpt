@@ -6,6 +6,7 @@ from langchain.storage import LocalFileStore
 from langchain.vectorstores.faiss import FAISS
 from langchain.embeddings import OpenAIEmbeddings
 import streamlit as st
+import os
 
 
 def generate_hash(url: str, algorithm: str = "sha256") -> str:
@@ -49,7 +50,13 @@ def load_website():
                         )
         loader.requests_per_second = 5
         docs = loader.load_and_split(text_splitter=splitter)
-        cache_dir = LocalFileStore(f'../../../db/embeddings/{generate_hash(url, "md5")}')
+        folder_path = './db'
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+            print(f"폴더 생성 완료: {folder_path}")
+        else:
+            print(f"폴더가 이미 존재합니다: {folder_path}")
+        cache_dir = LocalFileStore(f'./db/{generate_hash(url, "md5")}')
         cached_embeddings = CacheBackedEmbeddings.from_bytes_store(
             OpenAIEmbeddings(),
             cache_dir
