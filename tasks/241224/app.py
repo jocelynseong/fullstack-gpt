@@ -1,5 +1,5 @@
 import streamlit as st
-from ai import *
+import ai
 import time
 
 def paint_history():
