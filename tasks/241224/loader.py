@@ -8,6 +8,7 @@ from langchain.embeddings import OpenAIEmbeddings
 import streamlit as st
 import os
 
+open_api_key=None
 
 def generate_hash(url: str, algorithm: str = "sha256") -> str:
     url_bytes = url.encode('utf-8')
@@ -37,9 +38,13 @@ def parse_page(soup):
         footer.decompose()
     return str(soup.get_text()).replace("\n", "").replace("\xa0", "").replace("\t", "")
 
+def set_open_api_key(key):
+    global open_api_key
+    open_api_key=key
 
-@st.cache_data(show_spinner=False)
+@st.cache_data()
 def load_website():
+    global open_api_key
     try :
         url = 'https://developers.cloudflare.com/sitemap-0.xml'
         loader = SitemapLoader(url, 
@@ -58,7 +63,9 @@ def load_website():
             print(f"폴더가 이미 존재합니다: {folder_path}")
         cache_dir = LocalFileStore(f'./db/{generate_hash(url, "md5")}')
         cached_embeddings = CacheBackedEmbeddings.from_bytes_store(
-            OpenAIEmbeddings(),
+            OpenAIEmbeddings(
+                openai_api_key=open_api_key
+            ),
             cache_dir
         )
         vector_store = FAISS.from_documents(docs, cached_embeddings)
