@@ -50,7 +50,7 @@ if api_key:
     if message:
         send_message(message, "human")
         with st.chat_message("ai"):
-            response = ai.get_answer(message)
+            response = ai.get_answer(message, api_key)
             if response == "AuthError":
                 stream_response("open ai key is not correct")
             elif response == "Error":

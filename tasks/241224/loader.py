@@ -42,9 +42,8 @@ def set_open_api_key(key):
     global open_api_key
     open_api_key=key
 
-@st.cache_data()
-def load_website():
-    global open_api_key
+@st.cache_data(show_spinner=False)
+def load_website(open_api_key):
     try :
         url = 'https://developers.cloudflare.com/sitemap-0.xml'
         loader = SitemapLoader(url, 
@@ -73,5 +72,4 @@ def load_website():
         return retriever
     except Exception as e:
         print(e)
-        st.write(e)
         return None

@@ -159,23 +159,21 @@ def find_similar_question_answer(question):
 
 
 @st.cache_data(show_spinner="searching...")
-def get_answer(question):
+def get_answer(question, open_api_key):
     try : 
         cached_answer = find_similar_question_answer(question)
         if cached_answer:
             return cached_answer
         else:
             chain = {
-                "docs" : loader.load_website(), 
+                "docs" : loader.load_website(open_api_key), 
                 "question" : RunnablePassthrough()
             } | RunnableLambda(get_answers) | RunnableLambda(choose_answer)
             response = chain.invoke(question)
             return response.content
     except AuthenticationError as ae:
-        st.write(ae)
         print(ae)
         return "AuthError"
     except Exception as e:
-        st.write(e)
         print(e)
         return "Error"
