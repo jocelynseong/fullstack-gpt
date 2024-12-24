@@ -8,27 +8,23 @@ from openai.error import AuthenticationError
 import streamlit as st
 import loader
 
-llm = ChatOpenAI(
-    temperature=0.1,
-    openai_api_key=None
-)
-
-memory = ConversationBufferMemory(
-    llm=llm,
-    return_messages=True
-)
+llm = None
+memory = None
 
 def add_messages(input, output):
+    global memory
     memory.save_context({"input" : input}, {"output" : output})
 
 def get_history():
+    global memory
     return memory.load_memory_variables({})
 
 def load_memory():
-    ## 메모리 로드
+    global memory
     return memory.load_memory_variables({})['history']
 
 def save_memory(question, answer):
+    global memory
     existing_data = memory.load_memory_variables({"input": question})
     if "output" in existing_data and existing_data["output"] == answer:
         print("이미 동일한 입력과 출력이 메모리에 저장되어 있습니다.")
@@ -83,6 +79,7 @@ answers_prompt = ChatPromptTemplate.from_template(
 )
 
 def get_answers(inputs):
+    global llm
     docs = inputs['docs']
     question = inputs['question']
     answers_chain = answers_prompt | llm
@@ -100,6 +97,7 @@ def get_answers(inputs):
     }
 
 def choose_answer(inputs):
+    global llm
     answers = inputs["answers"]
     question = inputs["question"]
     choose_chain = choose_prompt | llm
@@ -115,10 +113,22 @@ def choose_answer(inputs):
     )
 
 def set_api_key(api_key):
-    llm.openai_api_key=api_key
+    global llm
+    llm = ChatOpenAI(
+        temperature=0.1,
+        openai_api_key=api_key
+    )
+    global memory 
+    memory = ConversationBufferMemory(
+        llm=llm,
+        return_messages=True
+    )
+
 
 
 def find_similar_question_answer(question):
+    global memory
+    global llm
     history = memory.load_memory_variables({})['history']
     print('history-->', history)
     if len(history) == 0:
