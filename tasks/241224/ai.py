@@ -174,5 +174,5 @@ def get_answer(question):
         print(ae)
         return "AuthError"
     except Exception as e:
-        print(ae)
+        print(e)
         return "Error"
