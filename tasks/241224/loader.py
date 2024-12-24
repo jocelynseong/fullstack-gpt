@@ -1,7 +1,6 @@
 import hashlib
-from langchain.document_loaders import AsyncChromiumLoader, SitemapLoader
+from langchain.document_loaders import SitemapLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.document_transformers import Html2TextTransformer
 from langchain.embeddings import CacheBackedEmbeddings, OpenAIEmbeddings
 from langchain.storage import LocalFileStore
 from langchain.vectorstores.faiss import FAISS
@@ -10,10 +9,7 @@ import streamlit as st
 
 
 def generate_hash(url: str, algorithm: str = "sha256") -> str:
-    # Encode URL to bytes
     url_bytes = url.encode('utf-8')
-
-    # Select hash algorithm
     if algorithm == "md5":
         hash_object = hashlib.md5(url_bytes)
     elif algorithm == "sha1":

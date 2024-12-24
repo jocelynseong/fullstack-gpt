@@ -1,5 +1,6 @@
 import streamlit as st
-import ai, time
+from ai import *
+import time
 
 def paint_history():
     for message in st.session_state["messages"]:
