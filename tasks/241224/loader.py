@@ -66,4 +66,5 @@ def load_website():
         return retriever
     except Exception as e:
         print(e)
+        st.write(e)
         return None
